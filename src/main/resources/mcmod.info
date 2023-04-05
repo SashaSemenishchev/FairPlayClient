@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "spectator",
+    "name": "Spectator",
+    "description": "Hypixel BedWars QOL focused mod",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/SashaSemenishchev/",
+    "updateUrl": "https://github.com/SashaSemenishchev/",
+    "authorList": ["SashaSemenishchev", "MrFunny"],
+    "credits": "SashaSemenishchev",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
