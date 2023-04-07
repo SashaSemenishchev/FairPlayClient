@@ -15,6 +15,7 @@
  * Contact: sashasemenishchev@protonmail.com
  */
 
+package me.mrfunny.fairplayclient.util;
 
 import java.util.HashMap;
 

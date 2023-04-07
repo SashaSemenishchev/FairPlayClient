@@ -42,8 +42,6 @@ object ConstantPool {
     )
 
     const val legitDistance: Double = 3.0
-
-//    const val maxReachDistance: Double = 3.7
     @JvmField val reachData: Map<UUID, Float> = CappedHashMap(100);
     @JvmField val fairplayModeEnabled = BoolValue("Fairplay Mode", true)
     @JvmField val changeVelocity = BoolValue("FM - Change velocity", true)

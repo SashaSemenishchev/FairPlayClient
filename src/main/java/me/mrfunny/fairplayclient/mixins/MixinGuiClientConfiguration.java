@@ -29,7 +29,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-@Mixin(GuiClientConfiguration.Companion.class)
+@Mixin(value = GuiClientConfiguration.Companion.class, remap = false)
 @SideOnly(Side.CLIENT)
 public class MixinGuiClientConfiguration {
     /**

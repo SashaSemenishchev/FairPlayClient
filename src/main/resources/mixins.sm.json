@@ -6,16 +6,22 @@
   "mixins": [
   ],
   "client": [
-    "MixinBrandRetriever",
-    "MixinC17PayloadPacket",
+    "MixinCommand",
+    "MixinCommandManager",
     "MixinEntityPlayerSP",
+    "MixinGuiButton",
+    "MixinGuiButtonExt",
     "MixinGuiClientConfiguration",
+    "MixinGuiScreen",
     "MixinLiquidBounce",
+    "MixinLiquidGuiMainMenu",
     "MixinMinecraft",
     "MixinModList",
     "MixinModule",
     "MixinModuleManager",
     "MixinNetHandlerPlayClient",
-    "MixinPlayerController"
+    "MixinNetManager",
+    "MixinPlayerController",
+    "MixinServerUtils"
   ]
 }

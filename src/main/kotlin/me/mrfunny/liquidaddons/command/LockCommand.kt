@@ -18,21 +18,29 @@
 package me.mrfunny.liquidaddons.command
 
 import me.mrfunny.fairplayclient.FairPlayClient
+import me.mrfunny.fairplayclient.util.AesProvider
+import me.mrfunny.fairplayclient.util.HardwareIdProvider
 import net.ccbluex.liquidbounce.features.command.Command
+import org.apache.commons.codec.digest.DigestUtils
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.OpenOption
+import java.nio.file.StandardOpenOption
 
 class LockCommand : Command("lock") {
     override fun execute(args: Array<String>) {
-        if(FairPlayClient.locked) return
-        val lockPath = args.getOrNull(0) ?: "clientlock"
-        val lockFile = File(lockPath)
+        FairPlayClient.modulesLocked = true;
+        if(FairPlayClient.isLocked()) return
+        val password = args.getOrNull(1) ?: return
+        val lockPath = args.getOrNull(2) ?: "clientlock"
+        val lockFile = File(mc.mcDataDir, lockPath)
         try {
-            Files.write(lockFile.toPath(), byteArrayOf(0))
-        } catch (ignored: Exception){}
+            Files.write(lockFile.toPath(), AesProvider.encrypt(password, HardwareIdProvider.getHardwareId()))
+        } catch (ignored: Exception){
+            ignored.printStackTrace()
+        }
 
-        mc.ingameGUI.chatGUI.clearChatMessages()
-        FairPlayClient.locked = true;
+        FairPlayClient.setLocked(true)
     }
 
     override fun tabComplete(args: Array<String>): List<String> {

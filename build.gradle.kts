@@ -70,22 +70,37 @@ dependencies {
     implementation("gg.essential:essential-1.8.9-forge:3760")
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     compileOnly("org.spongepowered:mixin:0.8.5")
-//    implementation("org.lwjgl:lwjgl-glfw:3.1.1")
-//    compileOnly("org.projectlombok:lombok:1.18.24")
-//    annotationProcessor("org.projectlombok:lombok:1.18.24")
 }
 
 tasks {
     register<Copy>("copyJar") {
         from(project.buildDir.absolutePath + File.separator + "libs" + File.separator + (project.name + "-" + project.version + ".jar"))
-        destinationDir = File(copyDir)
+        destinationDir = File(project.properties["modsDir"]?.toString() ?: copyDir)
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
         println(project.buildDir.absolutePath + File.separator + "libs" + File.separator + (project.name + "-" + project.version + ".jar"))
     }
+
     register("buildDev") {
         finalizedBy("copyJar")
         dependsOn("build")
         group = "build"
+    }
+
+    register<Copy>("installHackEngine") {
+        val to = project.properties["modsDir"]?.toString() ?: project.buildDir.toString()
+        from(project.projectDir.absolutePath + File.separator + "libs" + File.separator + "liquidbounce.jar")
+        destinationDir = File(to)
+        if(!destinationDir.exists()) {
+            destinationDir.mkdirs()
+        }
+        duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+        group = "build setup"
+    }
+
+    register("installClient") {
+        group = "build"
+        dependsOn("buildDev")
+        finalizedBy("installHackEngine")
     }
     wrapper.get().doFirst {
         delete("$buildDir/libs/")
@@ -115,11 +130,7 @@ tasks {
         dependsOn(shadowJar)
         enabled = false
     }
-//    remapJar {
-//        val file = shadowJar.get().archiveFile
-//        archiveClassifier.set(file.hashCode().toString())
-//        input.set(file)
-//    }
+
     shadowJar {
         archiveClassifier.set("dev")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -148,5 +159,11 @@ tasks {
         options.encoding = "UTF-8"
         sourceCompatibility = "1.8"
         targetCompatibility = "1.8"
+    }
+}
+
+configurations {
+    all {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-runtime")
     }
 }

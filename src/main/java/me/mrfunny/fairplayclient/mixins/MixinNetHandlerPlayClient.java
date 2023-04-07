@@ -22,6 +22,9 @@ import me.mrfunny.lunarspoof.websocket.asset.LunarAssetWebSocket;
 import me.mrfunny.lunarspoof.websocket.asset.packet.impl.WSPacketServerSetServer;
 import me.mrfunny.liquidaddons.util.ConstantPool;
 import me.mrfunny.fairplayclient.FairPlayClient;
+import net.ccbluex.liquidbounce.LiquidBounce;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.S0CPacketSpawnPlayer;
@@ -49,6 +52,19 @@ public abstract class MixinNetHandlerPlayClient {
         if(socket != null && socket.isClosed()) {
             socket.reconnect();
         }
+
+        String ip;
+        ServerData data = Minecraft.getMinecraft().getCurrentServerData();
+        if(data != null) {
+            ip = data.serverIP;
+        } else {
+            ip = "localhost";
+        }
+        LunarSpoof.getLogger().info("IP: " + ip);
+        if(socket != null) {
+            socket.sendPacket(new WSPacketServerSetServer(ip));
+        }
+        LiquidBounce.clientRichPresence.setShowRichPresenceValue(false);
     }
 
     @Inject(method = "handleSpawnPlayer", at = @At("RETURN"))

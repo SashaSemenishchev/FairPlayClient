@@ -54,7 +54,7 @@ public abstract class MixinModule {
     @Inject(method = "setState", at = @At("HEAD"), cancellable = true, remap = false)
     public void checkIfDangerous(boolean value, CallbackInfo ci) {
         Module _this = (Module) (Object) this;
-        if(_this instanceof ClickGUI && value && FairPlayClient.locked) {
+        if(_this instanceof ClickGUI && value && FairPlayClient.isLocked() && FairPlayClient.modulesLocked) {
             ci.cancel();
             return;
         }

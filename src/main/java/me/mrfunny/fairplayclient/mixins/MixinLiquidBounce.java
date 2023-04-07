@@ -35,6 +35,8 @@
 package me.mrfunny.fairplayclient.mixins;
 
 import me.mrfunny.liquidaddons.command.LockCommand;
+import me.mrfunny.liquidaddons.command.UnlockCommand;
+import me.mrfunny.liquidaddons.command.UnlockModulesCommand;
 import net.ccbluex.liquidbounce.LiquidBounce;
 import net.ccbluex.liquidbounce.features.command.CommandManager;
 import net.ccbluex.liquidbounce.features.special.ClientRichPresence;
@@ -49,17 +51,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Turns off rich presence and registers additional commands
  */
-@Mixin(LiquidBounce.class)
+@Mixin(value = LiquidBounce.class, remap = false)
 @SideOnly(Side.CLIENT)
 public class MixinLiquidBounce {
     @Shadow(remap = false) public static ClientRichPresence clientRichPresence;
 
-    @Shadow public static CommandManager commandManager;
+    @Shadow(remap = false) public static CommandManager commandManager;
 
     @Inject(method = "startClient", at = @At("RETURN"), remap = false)
     public void handleLiquidbounceStart(CallbackInfo ci) {
         clientRichPresence.setShowRichPresenceValue(false);
         clientRichPresence.shutdown();
         commandManager.registerCommand(new LockCommand());
+        commandManager.registerCommand(new UnlockCommand());
+        commandManager.registerCommand(new UnlockModulesCommand());
     }
 }

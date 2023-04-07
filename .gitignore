@@ -14,6 +14,8 @@ eclipse
 out
 .fleet
 .github
+.DS_Store
+DS_Store
 *.ipr
 *.iws
 *.iml
@@ -25,5 +27,5 @@ build
 
 # other
 run
-
-libs/liquidbounce.jar
+libs/cleanliquidbounce.jar
+libs/liquidbounce-*

@@ -37,6 +37,7 @@ object Raytracer {
         if (yaw < .0) {
             yaw += 360;
         }
-        return yaw
+
+        return MathHelper.wrapAngleTo180_double(yaw + 180)
     }
 }

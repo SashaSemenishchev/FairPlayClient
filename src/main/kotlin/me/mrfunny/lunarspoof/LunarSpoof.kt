@@ -15,29 +15,13 @@
  * Contact: sashasemenishchev@protonmail.com
  */
 
-/*
- * This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * Copyright © SashaSemenishchev 2023
- * Contact: sashasemenishchev@protonmail.com
- */
-
 package me.mrfunny.lunarspoof
 
 import com.mojang.util.UUIDTypeAdapter
 import gg.essential.api.EssentialAPI
 import gg.essential.api.utils.Multithreading
 import me.mrfunny.fairplayclient.FairPlayClient
+import me.mrfunny.fairplayclient.util.HardwareIdProvider
 import me.mrfunny.lunarspoof.feature.indicator.LunarNameTagIcon
 import me.mrfunny.lunarspoof.websocket.asset.LunarAssetWebSocket
 import me.mrfunny.lunarspoof.websocket.auth.LunarAuthWebSocket
@@ -100,7 +84,7 @@ class LunarSpoof(private val session: Session, private val currentServer: String
                         "clothCloak" to "",
                         "gitCommit" to "71aa13d47ce799788b8a4be46c1f196a4183e1b7'",
                         "hatHeightOffset" to hatHeightOffset,
-                        "hwid" to DigestUtils.sha256Hex(System.getProperty("user.name")),
+                        "hwid" to HardwareIdProvider.getHardwareId(),
                         "launcherVersion" to "2.15.1",
                         "lunarPlusColor" to "-1",
                         "os" to System.getProperty("os.name"),
@@ -123,7 +107,7 @@ class LunarSpoof(private val session: Session, private val currentServer: String
                     try {
                         LunarAssetWebSocket(httpHeaders).also { assetSocket = it }.connect()
                     } catch (e: URISyntaxException) {
-                        FairPlayClient.failedSpoof = true;
+                        FairPlayClient.failedSpoof = true
                         e.printStackTrace()
                     }
                 }

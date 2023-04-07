@@ -19,11 +19,14 @@ package me.mrfunny.fairplayclient;
 
 import gg.essential.api.EssentialAPI;
 import me.mrfunny.lunarspoof.LunarSpoof;
+import net.ccbluex.liquidbounce.LiquidBounce;
+import net.ccbluex.liquidbounce.utils.Background;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -42,7 +45,8 @@ public class FairPlayClient {
 
     public static long lastCombat = 0;
     public static boolean inCombat = false;
-    public static boolean locked = false;
+    private static boolean locked = false;
+    public static boolean modulesLocked = false;
     public static LunarSpoof lunarSpoof;
     public static boolean failedSpoof;
 
@@ -66,16 +70,27 @@ public class FairPlayClient {
         lunarSpoof = new LunarSpoof(mc.getSession(), ip);
         lunarSpoof.startAssetWebSocket();
         if(Files.exists(new File(mc.mcDataDir, "clientlock").toPath())) {
-            locked = true;
+            setLocked(true);
         }
-//        Display.setTitle("Minecraft 1.8.9");
     }
 
     public static void sendWarning(String it) {
+        if(locked && modulesLocked) return;
         EssentialAPI.getNotifications().push("§eFairPlayClient", it, 2f);
     }
 
     public static void sendNotification(String title, String subtitle) {
+        if(locked) return;
         EssentialAPI.getNotifications().push(title, subtitle, 2f);
+    }
+
+    public static void setLocked(boolean locked) {
+        FairPlayClient.locked = locked;
+        LiquidBounce.locked = locked;
+        modulesLocked = locked;
+    }
+
+    public static boolean isLocked() {
+        return locked;
     }
 }
