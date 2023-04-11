@@ -20,6 +20,7 @@ package me.mrfunny.liquidaddons.util
 import me.mrfunny.fairplayclient.util.CappedHashMap
 import net.ccbluex.liquidbounce.value.BoolValue
 import net.ccbluex.liquidbounce.value.FloatValue
+import net.ccbluex.liquidbounce.value.IntegerValue
 import net.minecraft.client.Minecraft
 import net.minecraft.network.NetworkManager
 import java.util.UUID
@@ -38,7 +39,7 @@ object ConstantPool {
     val modIdsToAdd: Map<String, String> = mapOf(
         "skyblockaddons" to "3.0.2-DEV",
         "keystrokes" to "5.1",
-        "togglesprint" to "1.0"
+        "dungeonfinder" to "2.4"
     )
 
     const val legitDistance: Double = 3.0
@@ -46,6 +47,7 @@ object ConstantPool {
     @JvmField val fairplayModeEnabled = BoolValue("Fairplay Mode", true)
     @JvmField val changeVelocity = BoolValue("FM - Change velocity", true)
     @JvmField val maxReachDistance = FloatValue("FM - Max Reach", 3.7f, 3.1f, 5f)
+    @JvmField val maxVelocity = IntegerValue("FM - Max Velocity", 90, 0, 100)
     @JvmStatic var currentNetworkManager: NetworkManager? = null
         get() {
             if(field == null) {

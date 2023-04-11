@@ -18,16 +18,13 @@
 
 package me.mrfunny.fairplayclient.mixins;
 
-import me.mrfunny.liquidaddons.DangerousModBlocker;
+import me.mrfunny.liquidaddons.module.DangerousModBlocker;
 import me.mrfunny.liquidaddons.util.ConstantPool;
 import me.mrfunny.fairplayclient.FairPlayClient;
 import net.ccbluex.liquidbounce.features.module.Module;
-import net.ccbluex.liquidbounce.features.module.ModuleCategory;
 import net.ccbluex.liquidbounce.features.module.modules.player.Reach;
 import net.ccbluex.liquidbounce.features.module.modules.render.ClickGUI;
 import net.ccbluex.liquidbounce.value.Value;
-import net.minecraft.client.Minecraft;
-import org.lwjgl.opengl.Display;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -47,6 +44,7 @@ public abstract class MixinModule {
             values.add(ConstantPool.fairplayModeEnabled);
             values.add(ConstantPool.changeVelocity);
             values.add(ConstantPool.maxReachDistance);
+            values.add(ConstantPool.maxVelocity);
             cir.setReturnValue(values);
         }
     }
@@ -59,7 +57,7 @@ public abstract class MixinModule {
             return;
         }
         if(!value) return;
-        DangerousModBlocker checker = DangerousModBlocker.getInstance();
+        DangerousModBlocker checker = DangerousModBlocker.INSTANCE;
         if(!checker.getState()) return;
         if(DangerousModBlocker.isBad(_this)) {
             FairPlayClient.sendWarning("§eFairPlay blocked dangerous mod activation: " + getName());

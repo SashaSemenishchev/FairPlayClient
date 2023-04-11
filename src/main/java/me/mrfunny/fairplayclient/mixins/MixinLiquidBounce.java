@@ -35,6 +35,7 @@
 package me.mrfunny.fairplayclient.mixins;
 
 import me.mrfunny.liquidaddons.command.LockCommand;
+import me.mrfunny.liquidaddons.command.LockLogsCommand;
 import me.mrfunny.liquidaddons.command.UnlockCommand;
 import me.mrfunny.liquidaddons.command.UnlockModulesCommand;
 import net.ccbluex.liquidbounce.LiquidBounce;
@@ -65,5 +66,6 @@ public class MixinLiquidBounce {
         commandManager.registerCommand(new LockCommand());
         commandManager.registerCommand(new UnlockCommand());
         commandManager.registerCommand(new UnlockModulesCommand());
+        commandManager.registerCommand(new LockLogsCommand());
     }
 }

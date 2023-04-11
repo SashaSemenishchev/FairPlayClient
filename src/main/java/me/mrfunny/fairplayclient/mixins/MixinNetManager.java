@@ -46,7 +46,7 @@ public abstract class MixinNetManager {
             if(current.getChannelName().equals("MC|Brand")) {
                 final ByteBuf message = Unpooled.buffer();
                 message.writeBytes("Lunar-Client".getBytes());
-                LunarSpoof.getLogger().info("Fooled Lunar Client");
+                LunarSpoof.getLogger().info("Spoofed 'playing with lunar' icon");
                 sendPacket(new C17PacketCustomPayload("REGISTER", new PacketBuffer(message)));
             }
         }

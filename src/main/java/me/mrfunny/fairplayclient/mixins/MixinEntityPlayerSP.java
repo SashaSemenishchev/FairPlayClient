@@ -17,6 +17,7 @@
 
 package me.mrfunny.fairplayclient.mixins;
 
+import gg.essential.api.utils.Multithreading;
 import me.mrfunny.liquidaddons.util.ConstantPool;
 import me.mrfunny.fairplayclient.FairPlayClient;
 import me.mrfunny.liquidaddons.util.Raytracer;
@@ -46,85 +47,98 @@ import java.util.UUID;
 @Mixin(EntityPlayerSP.class)
 public class MixinEntityPlayerSP {
     @Shadow protected Minecraft mc;
+    volatile long lastDamage = 0;
+    volatile String lastDamageType = "generic";
+    final Object lock = new Object();
 
     @Inject(method = "attackEntityFrom", at = @At("RETURN"))
     public void handleDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        try {
-            if(source.getDamageType().contains("fall")) return;
-            ModuleManager mm = LiquidBounce.moduleManager;
-            Reach module = (Reach) mm.get(Reach.class);
-            if(!module.getState() || !ConstantPool.fairplayModeEnabled.get()) return;
-            double closestRotation = Double.MAX_VALUE;
-
-            double motionYaw = Raytracer.getMotionYaw(mc.thePlayer);
-            EntityPlayer attackingPlayer = null;
-            EntityPlayerSP localPlayer = mc.thePlayer;
-            double currentDistance;
-            double distance = 0;
-            float maxDistance = ConstantPool.maxReachDistance.get();
-            float checkDistance = maxDistance + 1;
-            for (EntityPlayer playerEntity : this.mc.theWorld.playerEntities) {
-                if(playerEntity.equals(localPlayer)) continue;
-                currentDistance = getDistance(playerEntity, localPlayer, checkDistance);
-                if(currentDistance > checkDistance) continue;
-                double currentRotationDistance = Math.abs(motionYaw - playerEntity.rotationYawHead);
-                if(attackingPlayer == null) {
-                    attackingPlayer = playerEntity;
-                    distance = currentDistance;
-                    closestRotation = currentRotationDistance;
-                    continue;
-                }
-
-                if(currentRotationDistance < closestRotation) {
-                    closestRotation = currentRotationDistance;
-                    attackingPlayer = playerEntity;
-                    distance = currentDistance;
-                }
-            }
-            if(attackingPlayer != null) {
-                FairPlayClient.inCombat = true;
-                FairPlayClient.lastCombat = mc.theWorld.getTotalWorldTime();
-                System.out.println(distance);
-                if(distance >= ConstantPool.legitDistance) {
-                    if(distance > 10) {
-                        System.out.println(attackingPlayer.posX + "," + attackingPlayer.posZ + " - " + localPlayer.posX + "," + localPlayer.posZ);
+        Multithreading.runAsync(() -> {
+            try {
+                String currentDamage = source.getDamageType();
+                synchronized (lock) {
+                    long c = System.currentTimeMillis();
+                    long diff = c - lastDamage;
+                    if(diff < 250 && lastDamageType.equals("fall") && currentDamage.equals("generic")) {
+                        return;
                     }
-                    if(distance <= maxDistance) {
+                }
 
-                        UUID uuid = attackingPlayer.getUniqueID();
-                        Float rememberedReach = ConstantPool.reachData.get(uuid);
-                        double trueDistance = distance;
-                        if(rememberedReach == null) {
-                            ConstantPool.reachData.put(uuid, (float) distance);
-                        } else {
-                            if(rememberedReach < distance) {
+                if(currentDamage.equals("fall")) return;
+                ModuleManager mm = LiquidBounce.moduleManager;
+                Reach module = (Reach) mm.get(Reach.class);
+                if(!module.getState() || !ConstantPool.fairplayModeEnabled.get()) return;
+                double closestRotation = Double.MAX_VALUE;
+
+                double motionYaw = Raytracer.getMotionYaw(mc.thePlayer);
+                EntityPlayer attackingPlayer = null;
+                EntityPlayerSP localPlayer = mc.thePlayer;
+                double currentDistance;
+                double distance = 0;
+                float maxDistance = ConstantPool.maxReachDistance.get();
+                float checkDistance = maxDistance + 1;
+                for (EntityPlayer playerEntity : this.mc.theWorld.playerEntities) {
+                    if(playerEntity.equals(localPlayer)) continue;
+                    currentDistance = getDistance(playerEntity, localPlayer, checkDistance);
+                    if(currentDistance > checkDistance) continue;
+                    double currentRotationDistance = Math.abs(motionYaw - playerEntity.rotationYawHead);
+                    if(attackingPlayer == null) {
+                        attackingPlayer = playerEntity;
+                        distance = currentDistance;
+                        closestRotation = currentRotationDistance;
+                        continue;
+                    }
+
+                    if(currentRotationDistance < closestRotation) {
+                        closestRotation = currentRotationDistance;
+                        attackingPlayer = playerEntity;
+                        distance = currentDistance;
+                    }
+                }
+                if(attackingPlayer != null) {
+                    FairPlayClient.inCombat = true;
+                    FairPlayClient.lastCombat = mc.theWorld.getTotalWorldTime();
+                    if(distance >= ConstantPool.legitDistance) {
+                        if(distance > 10) {
+                            System.out.println(attackingPlayer.posX + "," + attackingPlayer.posZ + " - " + localPlayer.posX + "," + localPlayer.posZ);
+                        }
+                        if(distance <= maxDistance) {
+                            UUID uuid = attackingPlayer.getUniqueID();
+                            Float rememberedReach = ConstantPool.reachData.get(uuid);
+                            double trueDistance = distance;
+                            if(rememberedReach == null) {
                                 ConstantPool.reachData.put(uuid, (float) distance);
-                            } else if(rememberedReach >= distance) {
-                                trueDistance = rememberedReach;
+                            } else {
+                                if(rememberedReach < distance) {
+                                    ConstantPool.reachData.put(uuid, (float) distance);
+                                } else if(rememberedReach >= distance) {
+                                    trueDistance = rememberedReach;
+                                }
                             }
+                            module.getCombatReachValue().set(trueDistance + 0.1);
+                            if(ConstantPool.changeVelocity.get()) {
+                                try {
+                                    Velocity velocity = (Velocity) mm.get(Velocity.class);
+                                    Field field = velocity.getClass().getDeclaredField("legitChanceValue");
+                                    field.setAccessible(true);
+                                    IntegerValue value = (IntegerValue) field.get(velocity);
+                                    value.set((int)(ConstantPool.maxVelocity.get() - (distance / maxDistance)));
+                                } catch (Exception ignored){}
+                            }
+                        } else {
+                            module.getCombatReachValue().set(maxDistance - 0.1);
                         }
-                        module.getCombatReachValue().set(trueDistance + 0.1);
-                        if(ConstantPool.changeVelocity.get()) {
-                            try {
-                                Velocity velocity = (Velocity) mm.get(Velocity.class);
-                                Field field = velocity.getClass().getDeclaredField("legitChanceValue");
-                                field.setAccessible(true);
-                                IntegerValue value = (IntegerValue) field.get(velocity);
-                                value.set((int)(100 - (distance / maxDistance)));
-                            } catch (Exception ignored){}
-                        }
-                    } else {
-                        module.getCombatReachValue().set(maxDistance - 0.1);
+
+
+                        FairPlayClient.sendWarning("§c" + attackingPlayer.getName() + " hit you with bigger distance: " + distance);
                     }
-
-
-                    FairPlayClient.sendWarning("§c" + attackingPlayer.getName() + " hit you with bigger distance: " + distance);
                 }
-            }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
     }
 
     @Inject(method = "onUpdate", at = @At("RETURN"))

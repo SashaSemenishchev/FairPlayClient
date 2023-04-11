@@ -28,8 +28,7 @@ class WSPacketClientPlayerInfo : AbstractWebSocketPacket() {
     var color by Delegates.notNull<Int>()
     var bl by Delegates.notNull<Boolean>()
 
-    override fun write(buf: PacketBuffer) {
-    }
+    override fun write(buf: PacketBuffer) {}
 
     override fun read(buf: PacketBuffer) {
         playerId = buf.readUuid()

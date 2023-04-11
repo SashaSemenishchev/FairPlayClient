@@ -20,16 +20,23 @@ package me.mrfunny.liquidaddons.command
 import me.mrfunny.fairplayclient.FairPlayClient
 import me.mrfunny.fairplayclient.util.AesProvider
 import me.mrfunny.fairplayclient.util.HardwareIdProvider
+import me.mrfunny.liquidaddons.module.DangerousModBlocker
+import net.ccbluex.liquidbounce.LiquidBounce
 import net.ccbluex.liquidbounce.features.command.Command
-import org.apache.commons.codec.digest.DigestUtils
+import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.OpenOption
-import java.nio.file.StandardOpenOption
 
 class LockCommand : Command("lock") {
     override fun execute(args: Array<String>) {
-        FairPlayClient.modulesLocked = true;
+        FairPlayClient.modulesLocked = true
+        for (module in LiquidBounce.moduleManager.modules) {
+            if(module.category != ModuleCategory.RENDER) continue
+            if(!DangerousModBlocker.allowedRenderMods.contains(module::class.java))  {
+                module.state = false
+            }
+        }
+
         if(FairPlayClient.isLocked()) return
         val password = args.getOrNull(1) ?: return
         val lockPath = args.getOrNull(2) ?: "clientlock"

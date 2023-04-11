@@ -32,7 +32,9 @@
 
 package me.mrfunny.fairplayclient.mixins;
 
-import me.mrfunny.liquidaddons.DangerousModBlocker;
+import me.mrfunny.liquidaddons.module.DangerousModBlocker;
+import me.mrfunny.liquidaddons.module.WTap;
+import me.mrfunny.liquidaddons.module.WordsReplacer;
 import net.ccbluex.liquidbounce.features.module.Module;
 import net.ccbluex.liquidbounce.features.module.ModuleManager;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +50,8 @@ public abstract class MixinModuleManager {
 
     @Inject(method = "registerModules()V", at = @At("RETURN"))
     public void injectCustomModules(CallbackInfo ci) {
-        registerModule(DangerousModBlocker.getInstance());
+        registerModule(DangerousModBlocker.INSTANCE);
+        registerModule(WordsReplacer.INSTANCE);
+        registerModule(WTap.INSTANCE);
     }
 }
