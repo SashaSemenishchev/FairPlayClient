@@ -104,12 +104,6 @@ class LunarAssetWebSocket(
 
     override fun onClose(code: Int, reason: String, remote: Boolean) {
         LOGGER.info(String.format("Connection Closed (%d, \"%s\")", code, reason))
-//        if(!closedByMethod) {
-//            LOGGER.info("trying to reconnect")
-//            Multithreading.runAsync {
-//                reconnectBlocking()
-//            }
-//        }
     }
 
     override fun onError(e: Exception) {

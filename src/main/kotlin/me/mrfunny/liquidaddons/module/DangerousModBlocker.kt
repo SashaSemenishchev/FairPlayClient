@@ -96,7 +96,7 @@ object DangerousModBlocker : Module() {
             if(!module.state) continue
             if(isBad(module)) {
                 module.state = false
-                disabled++;
+                disabled++
             }
         }
 

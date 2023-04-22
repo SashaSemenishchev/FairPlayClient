@@ -21,17 +21,19 @@ import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
+import java.util.concurrent.ThreadLocalRandom
 
 @ModuleInfo("W-Tap", "W taps to increase knockback", ModuleCategory.COMBAT)
 object WTap : Module() {
 
     private var tick: Int = 0
     private var tapping: Boolean = false
+    private var nextTick: Int = 2
 
     @EventTarget
     fun onUpdate(event: TickEvent) {
         if(!tapping) return
-        if(tick == 4) {
+        if(tick == nextTick) {
             mc.thePlayer.isSprinting = true
             tapping = false
         }
@@ -40,10 +42,15 @@ object WTap : Module() {
     @EventTarget
     fun onAttack(event: AttackEvent) {
         val player = mc.thePlayer
-        if(player.isSprinting && !tapping) {
+        if(player.isSprinting && !tapping && ThreadLocalRandom.current().nextBoolean()) {
             player.isSprinting = true
             tapping = true
             tick = 0
+            random()
         }
+    }
+
+    fun random() {
+        nextTick = ThreadLocalRandom.current().nextInt(2, 10);
     }
 }

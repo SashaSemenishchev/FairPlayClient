@@ -59,6 +59,7 @@ class LockLogsCommand : Command("locklogs") {
         fun isBadLogLine(line: String) = line.contains("essentials lb", true) ||
                 line.contains("liquidbounce", true) ||
                 line.contains("lunarspoof", ignoreCase = true) ||
+                line.contains("FileManager") ||
                 line.contains("ls", ignoreCase = true) ||
                 line.contains("auth", ignoreCase = true) ||
                 line.contains("ccbluex", true) ||

@@ -28,6 +28,7 @@ import net.ccbluex.liquidbounce.features.module.modules.player.Reach;
 import net.ccbluex.liquidbounce.value.IntegerValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovingObjectPosition;
@@ -59,12 +60,12 @@ public class MixinEntityPlayerSP {
                 synchronized (lock) {
                     long c = System.currentTimeMillis();
                     long diff = c - lastDamage;
-                    if(diff < 250 && lastDamageType.equals("fall") && currentDamage.equals("generic")) {
+                    if(diff < 250 && isBadDamageType(lastDamageType) && currentDamage.equals("generic")) {
                         return;
                     }
                 }
 
-                if(currentDamage.equals("fall")) return;
+                if(isBadDamageType(currentDamage)) return;
                 ModuleManager mm = LiquidBounce.moduleManager;
                 Reach module = (Reach) mm.get(Reach.class);
                 if(!module.getState() || !ConstantPool.fairplayModeEnabled.get()) return;
@@ -75,6 +76,7 @@ public class MixinEntityPlayerSP {
                 EntityPlayerSP localPlayer = mc.thePlayer;
                 double currentDistance;
                 double distance = 0;
+
                 float maxDistance = ConstantPool.maxReachDistance.get();
                 float checkDistance = maxDistance + 1;
                 for (EntityPlayer playerEntity : this.mc.theWorld.playerEntities) {
@@ -115,14 +117,14 @@ public class MixinEntityPlayerSP {
                                     trueDistance = rememberedReach;
                                 }
                             }
-                            module.getCombatReachValue().set(trueDistance + 0.1);
+                            module.getCombatReachValue().set(trueDistance + ConstantPool.reachAddition.get());
                             if(ConstantPool.changeVelocity.get()) {
                                 try {
                                     Velocity velocity = (Velocity) mm.get(Velocity.class);
                                     Field field = velocity.getClass().getDeclaredField("legitChanceValue");
                                     field.setAccessible(true);
                                     IntegerValue value = (IntegerValue) field.get(velocity);
-                                    value.set((int)(ConstantPool.maxVelocity.get() - (distance / maxDistance)));
+                                    value.set(Math.min((int)(ConstantPool.minVelocity.get() + (distance / maxDistance * 100)), 100));
                                 } catch (Exception ignored){}
                             }
                         } else {
@@ -141,13 +143,23 @@ public class MixinEntityPlayerSP {
 
     }
 
+    private boolean isBadDamageType(String damage) {
+        switch (damage.toLowerCase()) {
+            case "fall":
+            case "fire":
+            case "void":
+                return true;
+        }
+        return false;
+    }
+
     @Inject(method = "onUpdate", at = @At("RETURN"))
     public void onTick(CallbackInfo ci) {
         long current = Minecraft.getMinecraft().theWorld.getTotalWorldTime();
 
         if((current - FairPlayClient.lastCombat) > 60 && FairPlayClient.inCombat && ConstantPool.fairplayModeEnabled.get()) {
             Reach module = (Reach) LiquidBounce.moduleManager.get(Reach.class);
-            module.getCombatReachValue().set(ConstantPool.legitDistance);
+            module.getCombatReachValue().set(ConstantPool.legitDistance + ConstantPool.reachAddition.get());
             FairPlayClient.inCombat = false;
         }
     }

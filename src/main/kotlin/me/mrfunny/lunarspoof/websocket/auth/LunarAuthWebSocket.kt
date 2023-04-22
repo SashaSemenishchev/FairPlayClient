@@ -24,6 +24,7 @@ import me.mrfunny.lunarspoof.websocket.auth.packet.impl.CPacketEncryptionRespons
 import me.mrfunny.lunarspoof.websocket.auth.packet.impl.SPacketAuthenticatedRequest
 import me.mrfunny.lunarspoof.websocket.auth.packet.impl.SPacketEncryptionRequest
 import gg.essential.api.utils.JsonHolder
+import gg.essential.api.utils.Multithreading
 import net.minecraft.util.CryptManager
 import net.minecraft.util.Session
 import org.apache.logging.log4j.LogManager
@@ -35,7 +36,9 @@ import java.math.BigInteger
 import java.net.Proxy
 import java.net.URI
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class LunarAuthWebSocket(
     httpHeaders: Map<String, String>,
@@ -50,6 +53,7 @@ class LunarAuthWebSocket(
     private var authenticated = false
     override fun onOpen(handshakedata: ServerHandshake) {
         LOGGER.info("Connected.")
+        attemts++
     }
 
     override fun onMessage(message: String) {}
@@ -85,9 +89,13 @@ class LunarAuthWebSocket(
         } catch (ex: AuthenticationException) {
             ex.printStackTrace()
         } catch (npe: NullPointerException) {
+            npe.printStackTrace()
             close()
         }
         sendPacket(CPacketEncryptionResponse(secretKey, publicKey, packet.bytes))
+        Multithreading.schedule({
+            sendPacket(CPacketEncryptionResponse(secretKey, publicKey, packet.bytes))
+        }, 1, TimeUnit.SECONDS)
     }
 
     fun acceptAuthentication(packet: SPacketAuthenticatedRequest) {
@@ -102,14 +110,22 @@ class LunarAuthWebSocket(
         val json = JsonHolder()
         json.put("packetType", packet.name)
         packet.processJson(json)
-        send(json.toString())
+        println("Sending: $json")
+        send(json.toString().toByteArray(StandardCharsets.UTF_8))
     }
+
+    private var attemts = 0;
 
     override fun onClose(code: Int, reason: String, remote: Boolean) {
         if (code == 1000) {
             LOGGER.info("Authentication Succeeded.")
         }
         LOGGER.info(String.format("Connection Closed (%d, \"%s\")", code, reason))
+        if(reason == "Timed out while waiting for encryption response" && attemts < 4) {
+            Multithreading.runAsync {
+                reconnectBlocking()
+            }
+        }
         if (authenticated) return
         consumer(null)
     }

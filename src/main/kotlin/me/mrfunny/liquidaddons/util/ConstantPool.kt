@@ -47,7 +47,8 @@ object ConstantPool {
     @JvmField val fairplayModeEnabled = BoolValue("Fairplay Mode", true)
     @JvmField val changeVelocity = BoolValue("FM - Change velocity", true)
     @JvmField val maxReachDistance = FloatValue("FM - Max Reach", 3.7f, 3.1f, 5f)
-    @JvmField val maxVelocity = IntegerValue("FM - Max Velocity", 90, 0, 100)
+    @JvmField val reachAddition = FloatValue("FM - Reach addition", 0.1f, 0f, 3f)
+    @JvmField val minVelocity = IntegerValue("FM - Min Velocity", 90, 100, 0)
     @JvmStatic var currentNetworkManager: NetworkManager? = null
         get() {
             if(field == null) {

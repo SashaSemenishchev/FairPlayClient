@@ -44,7 +44,8 @@ public abstract class MixinModule {
             values.add(ConstantPool.fairplayModeEnabled);
             values.add(ConstantPool.changeVelocity);
             values.add(ConstantPool.maxReachDistance);
-            values.add(ConstantPool.maxVelocity);
+            values.add(ConstantPool.reachAddition);
+            values.add(ConstantPool.minVelocity);
             cir.setReturnValue(values);
         }
     }
